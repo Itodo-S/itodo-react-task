@@ -41,6 +41,7 @@ const AdminLoginPage = () => {
     const isAdmin = sdk.check(response.role);
     
     if (isAdmin) {
+      localStorage.setItem("token", response?.token)
       dispatch({type: "SNACKBAR", payload:{message:"Login Successful!"}})
     }
   };

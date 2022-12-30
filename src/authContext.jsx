@@ -14,7 +14,10 @@ const reducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
       //TODO
+      localStorage.setItem("token", JSON.stringify({ ...action?.data?.token }));
       return {
+        user: action.payload,
+        token: action.payload.token,
         ...state,
       };
     case "LOGOUT":
@@ -46,6 +49,20 @@ const AuthProvider = ({ children }) => {
 
   React.useEffect(() => {
     //TODO
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const currentTime = new Date().getTime() / 1000;
+      if (decodedToken.exp > currentTime) {
+        dispatch({
+          type: 'LOGIN',
+          payload: {
+            user: decodedToken,
+            token: token,
+          },
+        });
+      }
+    }
   }, []);
 
   return (
