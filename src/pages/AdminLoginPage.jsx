@@ -27,7 +27,17 @@ const AdminLoginPage = () => {
 
   const onSubmit = async (data) => {
     let sdk = new MkdSDK();
-    //TODO
+    //TODO: Implement Login Functionality
+
+    const payload = {
+      ...data,
+      role: 'admin'
+    };
+
+    const response = await sdk.login(payload.email, payload.password, payload.role);
+
+    const isAdmin = sdk.check(response.role);
+    
   };
 
   return (
