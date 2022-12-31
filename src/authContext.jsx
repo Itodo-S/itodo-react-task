@@ -1,9 +1,7 @@
 import React, { useReducer } from "react";
 import MkdSDK from "./utils/MkdSDK";
-// import "jwt-decode";
 import jwtDecode from "jwt-decode";
 import { useNavigate } from "react-router";
-export const AuthContext = React.createContext();
 
 const initialState = {
   isAuthenticated: false,
@@ -22,6 +20,7 @@ const reducer = (state, action) => {
         ...state,
       };
     case "LOGOUT":
+      window.location.href = "/admin/login";
       localStorage.clear();
       return {
         ...state,
@@ -33,13 +32,15 @@ const reducer = (state, action) => {
   }
 };
 
+export const AuthContext = React.createContext(initialState);
+
 let sdk = new MkdSDK();
 
 export const tokenExpireError = (dispatch, errorMessage) => {
   const role = localStorage.getItem("role");
   if (errorMessage === "TOKEN_EXPIRED") {
     dispatch({
-      type: "Logout",
+      type: "LOGOUT",
     });
     window.location.href = "/" + role + "/login";
   }
@@ -47,6 +48,8 @@ export const tokenExpireError = (dispatch, errorMessage) => {
 
 const AuthProvider = ({ children }) => {
   const [state, setState] = React.useState({});
+  const [logout, setLogout] = useReducer(reducer, initialState);
+
   const login = (action) => {
     setState({
       user: action.payload,
@@ -58,7 +61,6 @@ const AuthProvider = ({ children }) => {
   React.useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-    // console.log(role);
     if (token) {
       const decodedToken = jwtDecode(token);
       const currentTime = new Date().getTime() / 1000;
@@ -80,6 +82,7 @@ const AuthProvider = ({ children }) => {
       value={{
         state,
         login,
+        setLogout,
       }}
     >
       {children}

@@ -13,7 +13,7 @@ const AdminDashboardPage = () => {
   const { state } = React.useContext(AuthContext);
   const [page, setPage] = React.useState(1);
   const [data, setData] = React.useState([]);
-  const { dispatch } = React.useContext(AuthContext);
+  const { setLogout } = React.useContext(AuthContext);
   const fetchApi = async () => {
     const response = await fetch(
       `https://reacttask.mkdlabs.com/v1/api/rest/video/PAGINATE`,
@@ -54,12 +54,8 @@ const AdminDashboardPage = () => {
     currentPage > offset && offset + limit < currentPage;
   const isPrevBtnDisabled = () => offset > 0;
 
-  const handleRowPerPage = (event) => {
-    setLimit(event.target.value);
-  };
-
   const handleLogout = () => {
-    dispatch({ type: "Logout" });
+    setLogout({ type: "LOGOUT" });
   };
 
   useEffect(() => {

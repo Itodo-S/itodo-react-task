@@ -33,13 +33,17 @@ const AdminLoginPage = () => {
 
     const payload = {
       ...data,
-      role: 'admin'
+      role: "admin",
     };
 
-    const response = await sdk.login(payload.email, payload.password, payload.role);
+    const response = await sdk.login(
+      payload.email,
+      payload.password,
+      payload.role
+    );
 
     const isAdmin = sdk.check(response.role);
-    
+
     if (isAdmin) {
       localStorage.setItem("token", response.token);
       localStorage.setItem("role", response.role);
