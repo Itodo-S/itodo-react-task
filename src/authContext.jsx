@@ -1,7 +1,7 @@
 import React, { useReducer } from "react";
 import MkdSDK from "./utils/MkdSDK";
-
-export const AuthContext = React.createContext();
+import jwtDecode from "jwt-decode";
+import { useNavigate } from "react-router";
 
 const initialState = {
   isAuthenticated: false,
@@ -15,9 +15,12 @@ const reducer = (state, action) => {
     case "LOGIN":
       //TODO
       return {
+        user: action.payload,
+        ...action.payload,
         ...state,
       };
     case "LOGOUT":
+      window.location.href = "/admin/login";
       localStorage.clear();
       return {
         ...state,
@@ -29,30 +32,57 @@ const reducer = (state, action) => {
   }
 };
 
+export const AuthContext = React.createContext(initialState);
+
 let sdk = new MkdSDK();
 
 export const tokenExpireError = (dispatch, errorMessage) => {
   const role = localStorage.getItem("role");
   if (errorMessage === "TOKEN_EXPIRED") {
     dispatch({
-      type: "Logout",
+      type: "LOGOUT",
     });
     window.location.href = "/" + role + "/login";
   }
 };
 
 const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, setState] = React.useState({});
+  const [logout, setLogout] = useReducer(reducer, initialState);
+
+  const login = (action) => {
+    setState({
+      user: action.payload,
+      ...action.payload,
+      ...state,
+    });
+  };
 
   React.useEffect(() => {
-    //TODO
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const currentTime = new Date().getTime() / 1000;
+      if (decodedToken.exp > currentTime) {
+        login({
+          payload: {
+            user: decodedToken,
+            token: token,
+            role,
+            isAuthenticated: true,
+          },
+        });
+      }
+    }
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
         state,
-        dispatch,
+        login,
+        setLogout,
       }}
     >
       {children}

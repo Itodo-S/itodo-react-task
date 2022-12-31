@@ -15,6 +15,37 @@ export default function MkdSDK() {
   
   this.login = async function (email, password, role) {
     //TODO
+    const payload = {
+      email,
+      password,
+      role,
+    }
+
+    const headers = {
+      "Content-Type": "application/json",
+      "x-project": "cmVhY3R0YXNrOmQ5aGVkeWN5djZwN3p3OHhpMzR0OWJtdHNqc2lneTV0Nw==",
+    }
+
+    const response = await fetch(
+      this._baseurl + '/v2/api/lambda/login',
+      {
+        method: "post",
+        headers,
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const jsonGet = await response.json();
+
+    if (response.status === 401) {
+      throw new Error(jsonGet.message);
+    }
+
+    if (response.status === 403) {
+      throw new Error(jsonGet.message);
+    }
+
+    return jsonGet;
   };
 
   this.getHeader = function () {
@@ -28,7 +59,7 @@ export default function MkdSDK() {
     return this._baseurl;
   };
   
-  this.callRestAPI = async function (payload, method) {
+  this.callRestAPI = async function (payload, method, version = 'v1') {
     const header = {
       "Content-Type": "application/json",
       "x-project": base64Encode,
@@ -38,13 +69,14 @@ export default function MkdSDK() {
     switch (method) {
       case "GET":
         const getResult = await fetch(
-          this._baseurl + `/v1/api/rest/${this._table}/GET`,
+          this._baseurl + `/${version}/api/rest/${this._table}/GET`,
           {
             method: "post",
             headers: header,
             body: JSON.stringify(payload),
           }
         );
+        
         const jsonGet = await getResult.json();
 
         if (getResult.status === 401) {
@@ -86,8 +118,9 @@ export default function MkdSDK() {
     }
   };  
 
-  this.check = async function (role) {
-    //TODO
+  this.check = function (role) {
+    //TODO: DIRECTS YOU TO THE DASHBOARD OF ROLE IS TRUE
+    return role === "admin";
   };
 
   return this;
