@@ -1,6 +1,8 @@
 import React, { useReducer } from "react";
 import MkdSDK from "./utils/MkdSDK";
-
+// import "jwt-decode";
+import jwtDecode from "jwt-decode";
+import { useNavigate } from "react-router";
 export const AuthContext = React.createContext();
 
 const initialState = {
@@ -14,10 +16,9 @@ const reducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
       //TODO
-      localStorage.setItem("token", JSON.stringify({ ...action?.data?.token }));
       return {
         user: action.payload,
-        token: action.payload.token,
+        ...action.payload,
         ...state,
       };
     case "LOGOUT":
@@ -45,20 +46,29 @@ export const tokenExpireError = (dispatch, errorMessage) => {
 };
 
 const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, setState] = React.useState({});
+  const login = (action) => {
+    setState({
+      user: action.payload,
+      ...action.payload,
+      ...state,
+    });
+  };
 
   React.useEffect(() => {
-    //TODO
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    // console.log(role);
     if (token) {
       const decodedToken = jwtDecode(token);
       const currentTime = new Date().getTime() / 1000;
       if (decodedToken.exp > currentTime) {
-        dispatch({
-          type: 'LOGIN',
+        login({
           payload: {
             user: decodedToken,
             token: token,
+            role,
+            isAuthenticated: true,
           },
         });
       }
@@ -69,7 +79,7 @@ const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         state,
-        dispatch,
+        login,
       }}
     >
       {children}

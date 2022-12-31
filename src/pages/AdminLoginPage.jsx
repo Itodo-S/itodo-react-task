@@ -15,7 +15,7 @@ const AdminLoginPage = () => {
     })
     .required();
 
-  // const { dispatch } = React.useContext(AuthContext);
+  const { login } = React.useContext(AuthContext);
   const { dispatch } = React.useContext(GlobalContext);
   const navigate = useNavigate();
   const {
@@ -41,8 +41,17 @@ const AdminLoginPage = () => {
     const isAdmin = sdk.check(response.role);
     
     if (isAdmin) {
-      localStorage.setItem("token", response?.token)
-      dispatch({type: "SNACKBAR", payload:{message:"Login Successful!"}})
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("role", response.role);
+      login({
+        payload: {
+          token: response.token,
+          isAuthenticated: true,
+          role: response.role,
+        },
+      });
+      navigate("/admin/dashboard");
+      dispatch({ type: "SNACKBAR", payload: { message: "Login Successful!" } });
     }
   };
 
